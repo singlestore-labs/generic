@@ -201,6 +201,69 @@ func TestSliceContains(t *testing.T) {
 	})
 }
 
+func TestSliceEvery(t *testing.T) {
+	t.Parallel()
+
+	t.Run("all elements match", func(t *testing.T) {
+		t.Parallel()
+
+		slice := []int{1, 1, 1, 1}
+		returns := generic.SliceEvery(slice, func(i int) bool {
+			return i == 1
+		})
+
+		t.Log("Should return true when all elements match condition")
+		assert.True(t, returns)
+	})
+
+	t.Run("returns false if not all elements match", func(t *testing.T) {
+		t.Parallel()
+
+		slice := []int{1, 2, 1, 1}
+		returns := generic.SliceEvery(slice, func(i int) bool {
+			return i == 1
+		})
+
+		t.Log("Should return false when not all elements match condition")
+		assert.False(t, returns)
+	})
+
+	t.Run("checks complex condition", func(t *testing.T) {
+		t.Parallel()
+
+		type User struct {
+			Name  string
+			Admin bool
+		}
+
+		users := []User{
+			{"Alice", false},
+			{"Bob", false},
+			{"Charlie", false},
+		}
+
+		returns := generic.SliceEvery(users, func(u User) bool {
+			return !u.Admin
+		})
+
+		t.Log("Should return true when all users are not admins")
+		assert.True(t, returns)
+
+		users = []User{
+			{"Alice", false},
+			{"Bob", true},
+			{"Charlie", false},
+		}
+
+		returns = generic.SliceEvery(users, func(u User) bool {
+			return u.Admin
+		})
+
+		t.Log("Should return false when not all users are admins")
+		assert.False(t, returns)
+	})
+}
+
 func TestSliceContainsElement(t *testing.T) {
 	t.Parallel()
 
