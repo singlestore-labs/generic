@@ -31,6 +31,15 @@ func SliceContains[T any](slice []T, filter func(t T) bool) bool {
 	return false
 }
 
+func AllElements[T any](slice []T, filter func(t T) bool) bool {
+	for _, item := range slice {
+		if !filter(item) {
+			return false
+		}
+	}
+	return true
+}
+
 func SliceContainsElement[T comparable](slice []T, element T) bool {
 	return SliceContains(slice, func(t T) bool {
 		return t == element
