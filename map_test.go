@@ -3,6 +3,7 @@ package generic_test
 // This file generated with Claude 3.7 Sonnet
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -351,5 +352,215 @@ func TestMerge(t *testing.T) {
 
 		t.Log("Should return a unchanged when b is empty")
 		assert.Equal(t, a, result)
+	})
+}
+
+func TestAllKeys(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true if all keys satisfy a condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"test_a": 1,
+			"test_b": 2,
+			"test_c": 3,
+		}
+
+		result := generic.AllKeys(m, func(k string) bool {
+			return strings.HasPrefix(k, "test_");
+		})
+
+		t.Log("Should return true if all keys satisfy the condition")
+		assert.True(t, result)
+	})
+
+	t.Run("returns false if any key does not satisfy the condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"test_a": 1,
+			"test_b": 2,
+			"other_c": 3,
+		}
+
+		result := generic.AllKeys(m, func(k string) bool {
+			return strings.HasPrefix(k, "test_");
+		})
+
+		t.Log("Should return false if any key does not satisfy the condition")
+		assert.False(t, result)
+	})
+}
+
+func TestAnyKey(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true if any key satisfies a condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"test_b": 2,
+			"c": 3,
+		}
+
+		result := generic.AnyKey(m, func(k string) bool {
+			return strings.HasPrefix(k, "test_");
+		})
+
+		t.Log("Should return true if any key satisfies the condition")
+		assert.True(t, result)
+	})
+
+	t.Run("returns false if no keys satisfy the condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": 2,
+			"c": 3,
+		}
+
+		result := generic.AnyKey(m, func(k string) bool {
+			return strings.HasPrefix(k, "test_");
+		})
+
+		t.Log("Should return false if no keys satisfy the condition")
+		assert.False(t, result)
+	})
+}
+
+func TestAllValues(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true if all values satisfy a condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": 2,
+			"c": 3,
+		}
+
+		result := generic.AllValues(m, func(v int) bool {
+			return v > 0;
+		})
+
+		t.Log("Should return true if all values satisfy the condition")
+		assert.True(t, result)
+	})
+
+	t.Run("returns false if any value does not satisfy the condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": -1,
+			"b": 2,
+			"c": 3,
+		}
+
+		result := generic.AllValues(m, func(v int) bool {
+			return v > 0;
+		})
+
+		t.Log("Should return false if any value does not satisfy the condition")
+		assert.False(t, result)
+	})
+
+	t.Run("handles complex condition", func(t *testing.T) {
+		t.Parallel()
+
+		type User struct {
+			Name  string
+			Admin bool
+		}
+
+		m := map[string]User{
+			"a": {Name: "Alice", Admin: false},
+			"b": {Name: "Bob", Admin: false},
+			"c": {Name: "Charlie", Admin: false},
+		}
+		result := generic.AllValues(m, func(v User) bool {
+			return !v.Admin
+		})
+
+		t.Log("Should return true if all users are not admins")
+		assert.True(t, result)
+
+		m["d"] = User{Name: "Dave", Admin: true}
+		result = generic.AllValues(m, func(v User) bool {
+			return !v.Admin
+		})
+
+		t.Log("Should return false if any user is an admin")
+		assert.False(t, result)
+	})
+}
+
+func TestAnyValue(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns true if any value satisfies a condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": -2,
+			"c": 3,
+		}
+
+		result := generic.AnyValue(m, func(v int) bool {
+			return v < 0;
+		})
+
+		t.Log("Should return true if any value satisfies the condition")
+		assert.True(t, result)
+	})
+
+	t.Run("returns false if no values satisfy the condition", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": 2,
+			"c": 3,
+		}
+
+		result := generic.AnyValue(m, func(v int) bool {
+			return v < 0;
+		})
+
+		t.Log("Should return false if no values satisfy the condition")
+		assert.False(t, result)
+	})
+
+	t.Run("handles complex condition", func(t *testing.T) {
+		t.Parallel()
+
+		type User struct {
+			Name  string
+			Admin bool
+		}
+
+		m := map[string]User{
+			"a": {Name: "Alice", Admin: false},
+			"b": {Name: "Bob", Admin: true},
+			"c": {Name: "Charlie", Admin: false},
+		}
+		result := generic.AnyValue(m, func(v User) bool {
+			return v.Admin
+		})
+
+		t.Log("Should return true if any user is an admin")
+		assert.True(t, result)
+
+		m["b"] = User{Name: "Bob", Admin: false}
+		result = generic.AnyValue(m, func(v User) bool {
+			return v.Admin
+		})
+
+		t.Log("Should return false if no users are admins")
+		assert.False(t, result)
 	})
 }
