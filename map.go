@@ -58,36 +58,36 @@ func Merge[K comparable, V any](a, b map[K]V) map[K]V {
 	return a
 }
 
-func AllKeys[K comparable, V any](m map[K]V, fn func(K) bool) bool {
+func AllKeys[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	for k := range m {
-		if !fn(k) {
+		if !filter(k) {
 			return false
 		}
 	}
 	return true
 }
 
-func AnyKey[K comparable, V any](m map[K]V, fn func(K) bool) bool {
+func AnyKey[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	for k := range m {
-		if fn(k) {
+		if filter(k) {
 			return true
 		}
 	}
 	return false
 }
 
-func AllValues[K comparable, V any](m map[K]V, fn func(V) bool) bool {
+func AllValues[K comparable, V any](m map[K]V, filter func(V) bool) bool {
 	for _, v := range m {
-		if !fn(v) {
+		if !filter(v) {
 			return false
 		}
 	}
 	return true
 }
 
-func AnyValue[K comparable, V any](m map[K]V, fn func(V) bool) bool {
+func AnyValue[K comparable, V any](m map[K]V, filter func(V) bool) bool {
 	for _, v := range m {
-		if fn(v) {
+		if filter(v) {
 			return true
 		}
 	}
