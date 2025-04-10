@@ -208,7 +208,7 @@ func TestSliceEvery(t *testing.T) {
 		t.Parallel()
 
 		slice := []int{1, 1, 1, 1}
-		returns := generic.SliceEvery(slice, func(i int) bool {
+		returns := generic.AllElements(slice, func(i int) bool {
 			return i == 1
 		})
 
@@ -220,7 +220,7 @@ func TestSliceEvery(t *testing.T) {
 		t.Parallel()
 
 		slice := []int{1, 2, 1, 1}
-		returns := generic.SliceEvery(slice, func(i int) bool {
+		returns := generic.AllElements(slice, func(i int) bool {
 			return i == 1
 		})
 
@@ -242,7 +242,7 @@ func TestSliceEvery(t *testing.T) {
 			{"Charlie", false},
 		}
 
-		returns := generic.SliceEvery(users, func(u User) bool {
+		returns := generic.AllElements(users, func(u User) bool {
 			return !u.Admin
 		})
 
@@ -255,7 +255,7 @@ func TestSliceEvery(t *testing.T) {
 			{"Charlie", false},
 		}
 
-		returns = generic.SliceEvery(users, func(u User) bool {
+		returns = generic.AllElements(users, func(u User) bool {
 			return u.Admin
 		})
 

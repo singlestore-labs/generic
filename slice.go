@@ -31,7 +31,7 @@ func SliceContains[T any](slice []T, filter func(t T) bool) bool {
 	return false
 }
 
-func SliceEvery[T any](slice []T, filter func(t T) bool) bool {
+func AllElements[T any](slice []T, filter func(t T) bool) bool {
 	for _, item := range slice {
 		if !filter(item) {
 			return false
