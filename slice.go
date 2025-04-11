@@ -56,6 +56,16 @@ func CountMatchingElements[T any](s []T, filter func(T) bool) int {
 	return c
 }
 
+// FirstMatchIndex returns -1 if there are no matches
+func FirstMatchIndex[T any](s []T, filter func(T) bool) int {
+	for i, e := range s {
+		if filter(e) {
+			return i
+		}
+	}
+	return -1
+}
+
 // CombineSlices may return the first slice if it is the only slice with elements.  A copy
 // is only made if it has to be made.
 func CombineSlices[T any](first []T, more ...[]T) []T {
