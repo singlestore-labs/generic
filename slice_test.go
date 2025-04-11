@@ -571,3 +571,103 @@ func TestIntersectSlices(t *testing.T) {
 		assert.Equal(t, expected, result)
 	})
 }
+
+func TestFirstMatchIndex(t *testing.T) {
+	t.Parallel()
+	t.Run("int slice with matches", func(t *testing.T) {
+		numbers := []int{1, 3, 5, 7, 9}
+
+		// Test finding the first even number (should be -1 since none exist)
+		t.Log("Looking for first even number in", numbers)
+		index := generic.FirstMatchIndex(numbers, func(n int) bool {
+			return n%2 == 0
+		})
+		assert.Equal(t, -1, index, "Should return -1 when no matches found")
+
+		// Test finding the first number greater than 4
+		t.Log("Looking for first number > 4 in", numbers)
+		index = generic.FirstMatchIndex(numbers, func(n int) bool {
+			return n > 4
+		})
+		assert.Equal(t, 2, index, "Should return index 2 for first number > 4 (value 5)")
+	})
+
+	t.Run("string slice with matches", func(t *testing.T) {
+		words := []string{"apple", "banana", "cherry", "date", "elderberry"}
+
+		// Test finding the first word starting with 'c'
+		t.Log("Looking for first word starting with 'c' in", words)
+		index := generic.FirstMatchIndex(words, func(s string) bool {
+			return len(s) > 0 && s[0] == 'c'
+		})
+		assert.Equal(t, 2, index, "Should return index 2 for first word starting with 'c' (cherry)")
+
+		// Test finding the first word with length > 6
+		t.Log("Looking for first word with length > 6 in", words)
+		index = generic.FirstMatchIndex(words, func(s string) bool {
+			return len(s) > 6
+		})
+		assert.Equal(t, 4, index, "Should return index 4 for first word with length > 6 (elderberry)")
+	})
+
+	t.Run("empty slice", func(t *testing.T) {
+		emptySlice := []int{}
+
+		t.Log("Testing with empty slice")
+		index := generic.FirstMatchIndex(emptySlice, func(n int) bool {
+			return n > 0
+		})
+		assert.Equal(t, -1, index, "Should return -1 for empty slice")
+	})
+
+	t.Run("no matches", func(t *testing.T) {
+		numbers := []int{2, 4, 6, 8, 10}
+
+		t.Log("Looking for number > 100 in", numbers)
+		index := generic.FirstMatchIndex(numbers, func(n int) bool {
+			return n > 100
+		})
+		assert.Equal(t, -1, index, "Should return -1 when no matches found")
+	})
+
+	t.Run("match at first element", func(t *testing.T) {
+		numbers := []int{5, 4, 3, 2, 1}
+
+		t.Log("Looking for first number > 3 in", numbers)
+		index := generic.FirstMatchIndex(numbers, func(n int) bool {
+			return n > 3
+		})
+		assert.Equal(t, 0, index, "Should return index 0 for first number > 3 (value 5)")
+	})
+
+	t.Run("match at last element", func(t *testing.T) {
+		numbers := []int{1, 2, 3, 4, 5}
+
+		t.Log("Looking for number 5 in", numbers)
+		index := generic.FirstMatchIndex(numbers, func(n int) bool {
+			return n == 5
+		})
+		assert.Equal(t, 4, index, "Should return index 4 for value 5")
+	})
+
+	t.Run("custom struct type", func(t *testing.T) {
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		people := []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+			{Name: "David", Age: 40},
+		}
+
+		// Find first person older than 30
+		t.Log("Looking for first person older than 30")
+		index := generic.FirstMatchIndex(people, func(p Person) bool {
+			return p.Age > 30
+		})
+		assert.Equal(t, 2, index, "Should return index 2 for first person older than 30 (Charlie)")
+	})
+}
