@@ -66,6 +66,18 @@ func FirstMatchIndex[T any](s []T, filter func(T) bool) int {
 	return -1
 }
 
+// ReplaceFirstMatchOrAppend appends the new element unless there is a matching element
+func ReplaceOrAppend[T any](s []T, n T, filter func(T) bool) []T {
+	i := FirstMatchIndex(s, filter)
+	c := CopySlice(s)
+	if i != -1 {
+		c[i] = n
+	} else {
+		c = append(c, n)
+	}
+	return c
+}
+
 // CombineSlices may return the first slice if it is the only slice with elements.  A copy
 // is only made if it has to be made.
 func CombineSlices[T any](first []T, more ...[]T) []T {
