@@ -671,3 +671,172 @@ func TestFirstMatchIndex(t *testing.T) {
 		assert.Equal(t, 2, index, "Should return index 2 for first person older than 30 (Charlie)")
 	})
 }
+
+func TestReplaceOrAppend(t *testing.T) {
+	t.Run("replace existing int element", func(t *testing.T) {
+		t.Parallel()
+		numbers := []int{1, 3, 5, 7, 9}
+
+		t.Log("Replacing first odd number with 10 in", numbers)
+		result := generic.ReplaceOrAppend(numbers, 10, func(n int) bool {
+			return n%2 != 0 // match first odd number
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []int{1, 3, 5, 7, 9}, numbers, "Original slice should remain unchanged")
+
+		// Result should have the first element (index 0) replaced
+		assert.Equal(t, []int{10, 3, 5, 7, 9}, result, "First odd number should be replaced with 10")
+	})
+
+	t.Run("append new int element when no match", func(t *testing.T) {
+		t.Parallel()
+		numbers := []int{1, 3, 5, 7, 9}
+
+		t.Log("Appending 10 when no even numbers exist in", numbers)
+		result := generic.ReplaceOrAppend(numbers, 10, func(n int) bool {
+			return n%2 == 0 // match first even number (none exists)
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []int{1, 3, 5, 7, 9}, numbers, "Original slice should remain unchanged")
+
+		// Result should have the new element appended
+		assert.Equal(t, []int{1, 3, 5, 7, 9, 10}, result, "10 should be appended when no match found")
+	})
+
+	t.Run("replace string based on prefix", func(t *testing.T) {
+		t.Parallel()
+		words := []string{"apple", "banana", "cherry", "date"}
+
+		t.Log("Replacing first word starting with 'c' in", words)
+		result := generic.ReplaceOrAppend(words, "cantaloupe", func(s string) bool {
+			return len(s) > 0 && s[0] == 'c'
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []string{"apple", "banana", "cherry", "date"}, words, "Original slice should remain unchanged")
+
+		// Result should have "cherry" replaced with "cantaloupe"
+		assert.Equal(t, []string{"apple", "banana", "cantaloupe", "date"}, result, "First word starting with 'c' should be replaced")
+	})
+
+	t.Run("append string when no match", func(t *testing.T) {
+		t.Parallel()
+		words := []string{"apple", "banana", "cherry", "date"}
+
+		t.Log("Appending a word starting with 'e' when none exists in", words)
+		result := generic.ReplaceOrAppend(words, "elderberry", func(s string) bool {
+			return len(s) > 0 && s[0] == 'e'
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []string{"apple", "banana", "cherry", "date"}, words, "Original slice should remain unchanged")
+
+		// Result should have the new element appended
+		assert.Equal(t, []string{"apple", "banana", "cherry", "date", "elderberry"}, result, "Word should be appended when no match found")
+	})
+
+	t.Run("empty slice", func(t *testing.T) {
+		t.Parallel()
+		emptySlice := []int{}
+
+		t.Log("Testing with empty slice, should append")
+		result := generic.ReplaceOrAppend(emptySlice, 42, func(n int) bool {
+			return n > 0
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []int{}, emptySlice, "Original empty slice should remain unchanged")
+
+		// Result should be a new slice with just the new element
+		assert.Equal(t, []int{42}, result, "New element should be appended to empty slice")
+	})
+
+	t.Run("replace element in last position", func(t *testing.T) {
+		t.Parallel()
+		numbers := []int{2, 4, 6, 8, 10}
+
+		t.Log("Replacing last element in", numbers)
+		result := generic.ReplaceOrAppend(numbers, 20, func(n int) bool {
+			return n == 10
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []int{2, 4, 6, 8, 10}, numbers, "Original slice should remain unchanged")
+
+		// Result should have the last element replaced
+		assert.Equal(t, []int{2, 4, 6, 8, 20}, result, "Last element should be replaced")
+	})
+
+	t.Run("custom struct type", func(t *testing.T) {
+		t.Parallel()
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		people := []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+		}
+
+		newPerson := Person{Name: "David", Age: 40}
+
+		t.Log("Replacing first person with age > 30")
+		result := generic.ReplaceOrAppend(people, newPerson, func(p Person) bool {
+			return p.Age > 30
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+		}, people, "Original slice should remain unchanged")
+
+		// Charlie should be replaced with David
+		assert.Equal(t, []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "David", Age: 40},
+		}, result, "First person with age > 30 should be replaced")
+	})
+
+	t.Run("append custom struct", func(t *testing.T) {
+		t.Parallel()
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		people := []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+		}
+
+		newPerson := Person{Name: "David", Age: 40}
+
+		t.Log("Appending new person when no match found")
+		result := generic.ReplaceOrAppend(people, newPerson, func(p Person) bool {
+			return p.Age > 50 // No match
+		})
+
+		// Original slice should be unchanged
+		assert.Equal(t, []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+		}, people, "Original slice should remain unchanged")
+
+		// New person should be appended
+		assert.Equal(t, []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+			{Name: "Charlie", Age: 35},
+			{Name: "David", Age: 40},
+		}, result, "New person should be appended when no match found")
+	})
+}
