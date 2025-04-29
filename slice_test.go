@@ -344,52 +344,147 @@ func TestCountMatchingElements(t *testing.T) {
 func TestCombineSlices(t *testing.T) {
 	t.Parallel()
 
+	t.Run("returns nil for no input", func(t *testing.T) {
+		t.Parallel()
+
+		result := generic.CombineSlices[int]()
+		t.Log("Should return nil when no slices are provided")
+		assert.Nil(t, result)
+	})
+
+	t.Run("returns single slice when only one is provided", func(t *testing.T) {
+		t.Parallel()
+
+		slice := []int{1, 2, 3}
+		result := generic.CombineSlices(slice)
+		t.Log("Should return the same slice when only one slice is provided")
+		assert.Equal(t, slice, result)
+	})
+
+	t.Run("returns second slice if first is empty", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{}
+		slice2 := []int{4, 5, 6}
+		result := generic.CombineSlices(slice1, slice2)
+		t.Log("Should return the second slice if the first slice is empty")
+		assert.Equal(t, slice2, result)
+	})
+
+	t.Run("combines two non-empty slices", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{1, 2}
+		slice2 := []int{3, 4}
+		result := generic.CombineSlices(slice1, slice2)
+		t.Log("Should combine two non-empty slices")
+		assert.Equal(t, []int{1, 2, 3, 4}, result)
+	})
+
 	t.Run("combines multiple slices", func(t *testing.T) {
 		t.Parallel()
 
-		s1 := []int{1, 2}
-		s2 := []int{3, 4}
-		s3 := []int{5, 6}
-
-		result := generic.CombineSlices(s1, s2, s3)
-
-		t.Log("Should combine all slices in order")
-		expected := []int{1, 2, 3, 4, 5, 6}
-		assert.Equal(t, expected, result)
+		slice1 := []int{1, 2}
+		slice2 := []int{3, 4}
+		slice3 := []int{5, 6}
+		result := generic.CombineSlices(slice1, slice2, slice3)
+		t.Log("Should combine all slices into one")
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6}, result)
 	})
 
-	t.Run("returns first slice if only one provided", func(t *testing.T) {
+	t.Run("handles empty slices in the middle", func(t *testing.T) {
 		t.Parallel()
 
-		s1 := []string{"a", "b", "c"}
-		result := generic.CombineSlices(s1)
-
-		t.Log("Should return first slice when only one is provided")
-		assert.Equal(t, s1, result)
+		slice1 := []int{1, 2}
+		slice2 := []int{}
+		slice3 := []int{3, 4}
+		result := generic.CombineSlices(slice1, slice2, slice3)
+		t.Log("Should skip empty slices and combine the rest")
+		assert.Equal(t, []int{1, 2, 3, 4}, result)
 	})
 
-	t.Run("handles empty first slice", func(t *testing.T) {
+	t.Run("avoids copying when returning the first slice", func(t *testing.T) {
 		t.Parallel()
 
-		s1 := []int{}
-		s2 := []int{1, 2, 3}
-
-		result := generic.CombineSlices(s1, s2)
-
-		t.Log("Should return second slice when first is empty")
-		assert.Equal(t, s2, result)
+		slice := []int{1, 2, 3}
+		result := generic.CombineSlices(slice)
+		t.Log("Should return the same slice without making a copy")
+		assert.Equal(t, slice, result)
 	})
 
-	t.Run("handles all empty slices", func(t *testing.T) {
+	t.Run("returns first slice if it contains all elements", func(t *testing.T) {
 		t.Parallel()
 
-		s1 := []int{}
-		s2 := []int{}
+		slice1 := []int{1, 2, 3}
+		slice2 := []int{}
+		result := generic.CombineSlices(slice1, slice2)
+		t.Log("Should return the first slice if it contains all elements")
+		assert.Equal(t, slice1, result)
+	})
+}
 
-		result := generic.CombineSlices(s1, s2)
+func TestCombineSlicesCopy(t *testing.T) {
+	t.Parallel()
 
-		t.Log("Should return empty slice when all inputs are empty")
+	t.Run("returns empty slice for no input", func(t *testing.T) {
+		t.Parallel()
+
+		result := generic.CombineSlicesCopy[int]()
+		t.Log("Should return an empty slice when no slices are provided")
+		assert.NotNil(t, result)
 		assert.Empty(t, result)
+	})
+
+	t.Run("returns a new slice when only one is provided", func(t *testing.T) {
+		t.Parallel()
+
+		slice := []int{1, 2, 3}
+		result := generic.CombineSlicesCopy(slice)
+		t.Log("Should return a new slice with the same elements when only one slice is provided")
+		assert.Equal(t, slice, result)
+		assert.False(t, &slice[0] == &result[0], "The underlying arrays should not have the same memory address")
+	})
+
+	t.Run("combines two non-empty slices", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{1, 2}
+		slice2 := []int{3, 4}
+		result := generic.CombineSlicesCopy(slice1, slice2)
+		t.Log("Should combine two non-empty slices into a new slice")
+		assert.Equal(t, []int{1, 2, 3, 4}, result)
+	})
+
+	t.Run("combines multiple slices", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{1, 2}
+		slice2 := []int{3, 4}
+		slice3 := []int{5, 6}
+		result := generic.CombineSlicesCopy(slice1, slice2, slice3)
+		t.Log("Should combine all slices into a new slice")
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6}, result)
+	})
+
+	t.Run("handles empty slices in the middle", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{1, 2}
+		slice2 := []int{}
+		slice3 := []int{3, 4}
+		result := generic.CombineSlicesCopy(slice1, slice2, slice3)
+		t.Log("Should skip empty slices and combine the rest into a new slice")
+		assert.Equal(t, []int{1, 2, 3, 4}, result)
+	})
+
+	t.Run("always returns a new slice even if total length matches first slice", func(t *testing.T) {
+		t.Parallel()
+
+		slice1 := []int{1, 2, 3}
+		result := generic.CombineSlicesCopy(slice1)
+		t.Log("Should return a new slice even if the total length matches the first slice")
+		assert.Equal(t, slice1, result)
+		assert.False(t, &slice1[0] == &result[0], "The underlying arrays should not have the same memory address")
 	})
 }
 
