@@ -1,9 +1,19 @@
 package generic
 
+// Keys returns the map keys as a slice
 func Keys[K comparable, V any](m map[K]V) []K {
 	slice := make([]K, 0, len(m))
 	for k := range m {
 		slice = append(slice, k)
+	}
+	return slice
+}
+
+// Values returns the map values as a slice
+func Values[K comparable, V any](m map[K]V) []V {
+	slice := make([]V, 0, len(m))
+	for _, v := range m {
+		slice = append(slice, v)
 	}
 	return slice
 }

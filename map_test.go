@@ -43,6 +43,55 @@ func TestKeys(t *testing.T) {
 	})
 }
 
+func TestValues(t *testing.T) {
+	t.Parallel()
+
+	t.Run("extracts values from map", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": 2,
+			"c": 3,
+		}
+
+		values := generic.Values(m)
+
+		t.Log("Should extract all values from map")
+		assert.Len(t, values, 3)
+		assert.Contains(t, values, 1)
+		assert.Contains(t, values, 2)
+		assert.Contains(t, values, 3)
+	})
+
+	t.Run("handles empty map", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[int]string{}
+		values := generic.Values(m)
+
+		t.Log("Should return empty slice for empty map")
+		assert.Empty(t, values)
+	})
+
+	t.Run("handles duplicate values", func(t *testing.T) {
+		t.Parallel()
+
+		m := map[string]int{
+			"a": 1,
+			"b": 1,
+			"c": 2,
+		}
+
+		values := generic.Values(m)
+
+		t.Log("Should include duplicate values in the result")
+		assert.Len(t, values, 3)
+		assert.Contains(t, values, 1)
+		assert.Contains(t, values, 2)
+	})
+}
+
 func TestCompareKeys(t *testing.T) {
 	t.Parallel()
 
@@ -368,7 +417,7 @@ func TestAllKeys(t *testing.T) {
 		}
 
 		result := generic.AllKeys(m, func(k string) bool {
-			return strings.HasPrefix(k, "test_");
+			return strings.HasPrefix(k, "test_")
 		})
 
 		t.Log("Should return true if all keys satisfy the condition")
@@ -379,13 +428,13 @@ func TestAllKeys(t *testing.T) {
 		t.Parallel()
 
 		m := map[string]int{
-			"test_a": 1,
-			"test_b": 2,
+			"test_a":  1,
+			"test_b":  2,
 			"other_c": 3,
 		}
 
 		result := generic.AllKeys(m, func(k string) bool {
-			return strings.HasPrefix(k, "test_");
+			return strings.HasPrefix(k, "test_")
 		})
 
 		t.Log("Should return false if any key does not satisfy the condition")
@@ -400,13 +449,13 @@ func TestAnyKey(t *testing.T) {
 		t.Parallel()
 
 		m := map[string]int{
-			"a": 1,
+			"a":      1,
 			"test_b": 2,
-			"c": 3,
+			"c":      3,
 		}
 
 		result := generic.AnyKey(m, func(k string) bool {
-			return strings.HasPrefix(k, "test_");
+			return strings.HasPrefix(k, "test_")
 		})
 
 		t.Log("Should return true if any key satisfies the condition")
@@ -423,7 +472,7 @@ func TestAnyKey(t *testing.T) {
 		}
 
 		result := generic.AnyKey(m, func(k string) bool {
-			return strings.HasPrefix(k, "test_");
+			return strings.HasPrefix(k, "test_")
 		})
 
 		t.Log("Should return false if no keys satisfy the condition")
@@ -444,7 +493,7 @@ func TestAllValues(t *testing.T) {
 		}
 
 		result := generic.AllValues(m, func(v int) bool {
-			return v > 0;
+			return v > 0
 		})
 
 		t.Log("Should return true if all values satisfy the condition")
@@ -461,7 +510,7 @@ func TestAllValues(t *testing.T) {
 		}
 
 		result := generic.AllValues(m, func(v int) bool {
-			return v > 0;
+			return v > 0
 		})
 
 		t.Log("Should return false if any value does not satisfy the condition")
@@ -511,7 +560,7 @@ func TestAnyValue(t *testing.T) {
 		}
 
 		result := generic.AnyValue(m, func(v int) bool {
-			return v < 0;
+			return v < 0
 		})
 
 		t.Log("Should return true if any value satisfies the condition")
@@ -528,7 +577,7 @@ func TestAnyValue(t *testing.T) {
 		}
 
 		result := generic.AnyValue(m, func(v int) bool {
-			return v < 0;
+			return v < 0
 		})
 
 		t.Log("Should return false if no values satisfy the condition")

@@ -79,24 +79,26 @@ func ReplaceOrAppend[T any](s []T, n T, filter func(T) bool) []T {
 }
 
 // CombineSlices may return the first slice if it is the only slice with elements.  A copy
-// is only made if it has to be made.
-func CombineSlices[T any](first []T, more ...[]T) []T {
-	if len(more) == 0 {
-		return first
+// is only made if it has to be made. For no input, nil is returned.
+func CombineSlices[T any](slices ...[]T) []T {
+	switch len(slices) {
+	case 0:
+		return nil
+	case 1:
+		return slices[0]
 	}
-	if len(first) == 0 && len(more) == 1 {
-		return more[0]
-	}
-	total := len(first)
-	for _, m := range more {
+	return CombineSlicesCopy[T](slices...)
+}
+
+// CombineSlicesCopy combines all of its input slices, always
+// returning a new slice, For no input, an empty slice is returned.
+func CombineSlicesCopy[T any](slices ...[]T) []T {
+	var total int
+	for _, m := range slices {
 		total += len(m)
 	}
-	if total == len(first) {
-		return first
-	}
-	combined := make([]T, len(first), total)
-	copy(combined, first)
-	for _, m := range more {
+	combined := make([]T, 0, total)
+	for _, m := range slices {
 		combined = append(combined, m...)
 	}
 	return combined
