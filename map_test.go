@@ -344,6 +344,119 @@ func TestCopyMap(t *testing.T) {
 	})
 }
 
+func TestCopyMapSubset(t *testing.T) {
+	t.Parallel()
+
+	t.Run("copies specified keys", func(t *testing.T) {
+		t.Parallel()
+
+		original := map[string]int{
+			"a": 1,
+			"b": 2,
+			"c": 3,
+			"d": 4,
+		}
+
+		keys := []string{"a", "c"}
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should copy only specified keys from the original map")
+		assert.Len(t, subset, 2)
+		assert.Equal(t, 1, subset["a"])
+		assert.Equal(t, 3, subset["c"])
+		assert.NotContains(t, subset, "b")
+		assert.NotContains(t, subset, "d")
+	})
+
+	t.Run("ignores keys not in original map", func(t *testing.T) {
+		t.Parallel()
+
+		original := map[string]int{
+			"a": 1,
+			"b": 2,
+		}
+
+		keys := []string{"a", "c", "d"}
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should only copy keys that exist in the original map")
+		assert.Len(t, subset, 1)
+		assert.Equal(t, 1, subset["a"])
+		assert.NotContains(t, subset, "c")
+		assert.NotContains(t, subset, "d")
+	})
+
+	t.Run("returns empty map for nil input", func(t *testing.T) {
+		t.Parallel()
+
+		var original map[string]int = nil
+		keys := []string{"a", "b"}
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should return empty map when input map is nil")
+		assert.Nil(t, subset)
+	})
+
+	t.Run("handles empty keys", func(t *testing.T) {
+		t.Parallel()
+
+		original := map[string]int{
+			"a": 1,
+			"b": 2,
+		}
+
+		var keys []string = nil
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should return empty map when keys slice is nil")
+		assert.Empty(t, subset)
+		assert.NotNil(t, subset)
+
+		keys = []string{}
+		subset = generic.CopyMapSubset(original, keys)
+
+		t.Log("Should return empty map when keys slice is empty")
+		assert.Empty(t, subset)
+		assert.NotNil(t, subset)
+	})
+
+	t.Run("handles empty map", func(t *testing.T) {
+		t.Parallel()
+
+		original := make(map[string]int)
+		keys := []string{"a", "b"}
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should return empty map when input map is empty")
+		assert.Empty(t, subset)
+		assert.NotNil(t, subset)
+	})
+
+	t.Run("handles complex values", func(t *testing.T) {
+		t.Parallel()
+
+		type User struct {
+			Name  string
+			Admin bool
+		}
+
+		original := map[string]User{
+			"a": {Name: "Alice", Admin: false},
+			"b": {Name: "Bob", Admin: true},
+			"c": {Name: "Charlie", Admin: false},
+		}
+
+		keys := []string{"a", "c"}
+		subset := generic.CopyMapSubset(original, keys)
+
+		t.Log("Should work with complex value types")
+		assert.Len(t, subset, 2)
+		assert.Equal(t, User{Name: "Alice", Admin: false}, subset["a"])
+		assert.Equal(t, User{Name: "Charlie", Admin: false}, subset["c"])
+		assert.NotContains(t, subset, "b")
+	})
+}
+
 func TestMerge(t *testing.T) {
 	t.Parallel()
 

@@ -26,6 +26,7 @@ func CompareKeys[K comparable, V any](a, b map[K]V) ([]K, []K) {
 
 // MissingKeys returns the keys that are in a but not b
 func MissingKeys[K comparable, V any](a, b map[K]V) []K {
+	// Pre-allocate with capacity of a since that's the maximum possible size
 	onlyA := make([]K, 0, len(a))
 	for k := range a {
 		if _, ok := b[k]; !ok {
@@ -35,12 +36,19 @@ func MissingKeys[K comparable, V any](a, b map[K]V) []K {
 	return onlyA
 }
 
+// EqualKeys checks if two maps have exactly the same keys.
+// Returns true if both maps contain the same set of keys, regardless of values.
 func EqualKeys[K comparable, V any](a, b map[K]V) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	if len(MissingKeys(a, b)) != 0 {
-		return false
+	// We don't need to check if there are extras in b not in a because 
+	// we checked that there are an equal number of keys so all we have
+	// to check is that all of a is in b
+	for k := range a {
+		if _, ok := b[k]; !ok {
+			return false
+		}
 	}
 	return true
 }
@@ -49,18 +57,39 @@ func CopyMap[K comparable, V any](m map[K]V) map[K]V {
 	if m == nil {
 		return nil
 	}
-	newM := make(map[K]V)
+	// Pre-allocate with capacity of m
+	newM := make(map[K]V, len(m))
 	for k, v := range m {
 		newM[k] = v
 	}
 	return newM
 }
 
+// CopyMapSubset creates a new map containing only the specified keys from the original map
+func CopyMapSubset[K comparable, V any](m map[K]V, keys []K) map[K]V {
+	if m == nil {
+		return nil
+	}
+
+	if len(m) == 0 {
+		return make(map[K]V)
+	}
+
+	// Pre-allocate with capacity of keys since that's the maximum possible size
+	result := make(map[K]V, len(keys))
+	for _, k := range keys {
+		if v, ok := m[k]; ok {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 // Merge copies b onto a, overriding any common keys:
 // a is modified and returned.
 func Merge[K comparable, V any](a, b map[K]V) map[K]V {
 	if a == nil {
-		return b
+		return CopyMap(b)
 	}
 	for k, v := range b {
 		a[k] = v
@@ -68,6 +97,8 @@ func Merge[K comparable, V any](a, b map[K]V) map[K]V {
 	return a
 }
 
+// AllKeys returns true if all keys in the map satisfy the given filter function.
+// Returns true for empty maps (vacuous truth).
 func AllKeys[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	for k := range m {
 		if !filter(k) {
@@ -77,6 +108,8 @@ func AllKeys[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	return true
 }
 
+// AnyKey returns true if at least one key in the map satisfies the given filter function.
+// Returns false for empty maps.
 func AnyKey[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	for k := range m {
 		if filter(k) {
@@ -86,6 +119,8 @@ func AnyKey[K comparable, V any](m map[K]V, filter func(K) bool) bool {
 	return false
 }
 
+// AllValues returns true if all values in the map satisfy the given filter function.
+// Returns true for empty maps (vacuous truth).
 func AllValues[K comparable, V any](m map[K]V, filter func(V) bool) bool {
 	for _, v := range m {
 		if !filter(v) {
@@ -95,6 +130,8 @@ func AllValues[K comparable, V any](m map[K]V, filter func(V) bool) bool {
 	return true
 }
 
+// AnyValue returns true if at least one value in the map satisfies the given filter function.
+// Returns false for empty maps.
 func AnyValue[K comparable, V any](m map[K]V, filter func(V) bool) bool {
 	for _, v := range m {
 		if filter(v) {
