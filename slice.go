@@ -6,6 +6,20 @@ func CopySlice[T any](orig []T) []T {
 	return c
 }
 
+// FilterSlice returns a new slice containing only elements for which filter returns true.
+func FilterSlice[T any](slice []T, filter func(T) bool) []T {
+	result := make([]T, 0, len(slice))
+	for _, item := range slice {
+		if filter(item) {
+			result = append(result, item)
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
 func CastStringySlice[B, A ~string | ~[]rune](orig []A) []B {
 	c := make([]B, len(orig))
 	for i, a := range orig {
