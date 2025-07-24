@@ -58,6 +58,31 @@ func TestCopySlice(t *testing.T) {
 	})
 }
 
+func TestFilterSlice(t *testing.T) {
+	t.Parallel()
+
+	t.Run("filters even numbers", func(t *testing.T) {
+		t.Parallel()
+		orig := []int{1, 2, 3, 4, 5, 6}
+		filtered := generic.FilterSlice(orig, func(i int) bool { return i%2 == 0 })
+		expected := []int{2, 4, 6}
+		assert.Equal(t, expected, filtered)
+	})
+
+	t.Run("returns nil for no matches", func(t *testing.T) {
+		t.Parallel()
+		orig := []int{1, 3, 5}
+		filtered := generic.FilterSlice(orig, func(i int) bool { return i%2 == 0 })
+		assert.Nil(t, filtered)
+	})
+	t.Run("returns nil for empty input", func(t *testing.T) {
+		t.Parallel()
+		orig := []int{}
+		filtered := generic.FilterSlice(orig, func(i int) bool { return true })
+		assert.Nil(t, filtered)
+	})
+}
+
 func TestCastStringySlice(t *testing.T) {
 	t.Parallel()
 
